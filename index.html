@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV to JSON Converter Modern</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css" type="text/css"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    <i class="fa-solid font-bold fa-file-code text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 text-lg leading-tight">CSV to JSON</h1>
+                    <p class="text-xs text-slate-500">Converter CSV to JSON</p>
+                </div>
+            </div>
+        </div>
+    </header> -->
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+
+        <!-- Controls / Options Panel -->
+        <section class="bg-white rounded-md p-5 border border-gray-100 shadow-soft">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-600"></i> Conversion Options
+                </h2>
+                <button id="reset-btn" class="text-xs text-slate-500 hover:text-red-600 flex items-center gap-1 transition">
+                    <i class="fa-solid fa-rotate-left"></i> Reset Form
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <!-- Delimiter Option -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Pemisah (Delimiter)</label>
+                    <select id="opt-delimiter" class="w-full text-sm bg-white border border-gray-100 rounded-md p-2.5 focus:ring-[1px] focus:ring-blue-100 focus:border-blue-100 outline-none transition">
+                        <option value="auto">Deteksi Otomatis</option>
+                        <option value=",">Koma (,)</option>
+                        <option value=";">Titik Koma (;)</option>
+                        <option value="&#9;">Tab (\t)</option>
+                        <option value="|">Pipe (|)</option>
+                    </select>
+                </div>
+
+                <!-- Header Option -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Baris Pertama</label>
+                    <select id="opt-header" class="w-full text-sm bg-white border border-gray-100 rounded-md p-2.5 focus:ring-[1px] focus:ring-blue-100 focus:border-blue-100 outline-none transition">
+                        <option value="true">Sebagai Header (Keys)</option>
+                        <option value="false">Tanpa Header (Data Biasa)</option>
+                    </select>
+                </div>
+
+                <!-- Output Structure Option -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Format Struktur</label>
+                    <select id="opt-structure" class="w-full text-sm bg-white border border-gray-100 rounded-md p-2.5 focus:ring-[1px] focus:ring-blue-100 focus:border-blue-100 outline-none transition">
+                        <option value="object">Array of Objects [{...}]</option>
+                        <option value="array">Array of Arrays [[...]]</option>
+                    </select>
+                </div>
+
+                <!-- Data Type Auto Parse Option -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Tipe Data</label>
+                    <select id="opt-parse-types" class="w-full text-sm bg-white border border-gray-100 rounded-md p-2.5 focus:ring-[1px] focus:ring-blue-100 focus:border-blue-100 outline-none transition">
+                        <option value="true">Conversion Angka & Boolean</option>
+                        <option value="false">Semua Tipe String</option>
+                    </select>
+                </div>
+
+                <!-- Indentation Option -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Format JSON</label>
+                    <select id="opt-minify" class="w-full text-sm bg-white border border-gray-100 rounded-md p-2.5 focus:ring-[1px] focus:ring-blue-100 focus:border-blue-100 outline-none transition">
+                        <option value="pretty">Pretty / Indented (2 spasi)</option>
+                        <option value="minified">Minified</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[480px]">
+            
+            <!-- Left Side: CSV Input -->
+            <div class="bg-white rounded-2xl border border-gray-100 flex flex-col overflow-hidden">
+                <div class="p-3.5 bg-gray-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-400 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span>
+                        <span class="text-xs font-bold text-slate-700 ml-2 uppercase tracking-wide">Input CSV</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <!-- Sample Data Button -->
+                        <button id="load-sample-btn" class="px-2.5 py-1 text-xs font-medium bg-white text-slate-700 border border-gray-100 rounded-md transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                            <span>Sample Data</span>
+                        </button>
+
+                        <!-- File Upload Button -->
+                        <label class="px-2.5 py-1 text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md cursor-pointer transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>Upload File</span>
+                            <input type="file" id="file-input" accept=".csv, .txt" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Textarea Area -->
+                <div class="relative flex-1 flex flex-col">
+                    <textarea id="csv-input" 
+                        class="w-full h-full min-h-[300px] lg:min-h-0 flex-1 p-3 font-mono text-sm bg-gray-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none leading-relaxed"
+                        placeholder="Tempel data CSV Anda di sini atau upload file .csv / .txt...&#10;&#10;Contoh:&#10;nama,umur,pekerjaan,aktif&#10;Budi,28,Developer,true&#10;Siti,24,Designer,false"
+                        spellcheck="false">
+                    </textarea>
+                </div>
+
+                <!-- CSV Stats Footer -->
+                <div class="px-4 py-2 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+                    <span id="csv-stat-size">0 KB</span>
+                    <span id="csv-stat-lines">0 Lines</span>
+                </div>
+            </div>
+
+            <!-- Right Side: JSON Output -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
+                <div class="p-3.5 bg-gray-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-code text-blue-600"></i>
+                        <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">Output JSON</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <!-- Copy Button -->
+                        <button id="copy-btn" class="px-2.5 py-1 text-xs font-medium bg-white text-slate-700 border border-gray-100 rounded-md transition flex items-center gap-1.5">
+                            <i class="fa-regular fa-copy text-amber-500"></i>
+                            <span id="copy-text">Copy</span>
+                        </button>
+
+                        <!-- Download Button -->
+                        <button id="download-btn" class="px-2.5 py-1 text-xs font-medium bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded-md transition shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Download JSON</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- JSON Output Area -->
+                <div class="relative flex-1 flex flex-col p-3 bg-gray-800 overflow-hidden">
+                    <!-- Error Alert Banner -->
+                    <div id="error-banner" class="hidden mb-3 p-3 bg-red-500/10 border border-red-500/30 rounded-md text-red-400 text-xs flex items-start gap-2">
+                        <i class="fa-solid fa-circle-exclamation text-base shrink-0 mt-0.5"></i>
+                        <div id="error-message" class="font-mono"></div>
+                    </div>
+
+                    <!-- Syntax Highlighted Container -->
+                    <pre id="json-output" class="w-full h-full min-h-[300px] lg:min-h-0 flex-1 p-3 font-mono text-sm text-slate-100 overflow-auto whitespace-pre-wrap break-all select-text focus:outline-none"></pre>
+                </div>
+
+                <!-- JSON Stats Footer -->
+                <div class="px-4 py-2 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+                    <span id="json-stat-size">0 KB</span>
+                    <span id="json-stat-items">0 Item</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-16 opacity-0 transition-all duration-300 bg-gray-800 text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 text-sm z-50 pointer-events-none">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-msg">Notification message</span>
+    </div>
+
+    <script src="./main.js"></script>
+</body>
+</html>
